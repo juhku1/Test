@@ -18,8 +18,8 @@
       var camera;
       var canJump = true;
 
+      // Luo uusi Babylon.js -maailma
       var createScene = function () {
-        // Luo uusi Babylon.js -maailma
         var scene = new BABYLON.Scene(engine);
 
         // Ota käyttöön fysiikka maailmassa
@@ -35,11 +35,11 @@
         camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 1, -10), scene);
         camera.setTarget(new BABYLON.Vector3(0, 1, 0));
         camera.attachControl(canvas, true);
-        
+
         // Määritä pelaajan kameran ominaisuudet
         camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
         camera.checkCollisions = true;
-        camera.applyGravity = true; // Lisätty painovoima
+        camera.applyGravity = true;
 
         // Luo puut maan pinnalle
         createTrees(scene);
@@ -47,8 +47,8 @@
         return scene;
       };
 
+      // Luo puut maailmaan
       var createTrees = function (scene) {
-        // Luo puut maailmaan
         for (var i = 0; i < 100; i++) {
           var tree = BABYLON.MeshBuilder.CreateCylinder('tree', { height: 3, diameterTop: 0.5, diameterBottom: 2 }, scene);
           tree.position = new BABYLON.Vector3(Math.random() * 90 - 45, 1.5, Math.random() * 90 - 45);
@@ -71,6 +71,7 @@
       // Päivitä näppäinasetukset
       scene.inputStates = { up: false, down: false, left: false, right: false };
 
+      // Kuuntele näppäimistön painalluksia
       window.addEventListener('keydown', function (event) {
         switch (event.key) {
           case 'w':
@@ -95,6 +96,7 @@
         }
       });
 
+      // Kuuntele näppäimistön vapautuksia
       window.addEventListener('keyup', function (event) {
         switch (event.key) {
           case 'w':
@@ -146,6 +148,7 @@
         }
       });
 
+      // Kuuntele ikkunan koon muutoksia
       window.addEventListener('resize', function () {
         engine.resize();
       });
