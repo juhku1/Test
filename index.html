@@ -40,7 +40,14 @@
 
                 new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
 
+                // Taivas
+                const skyMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
+                skyMaterial.backFaceCulling = false;
 
+                const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
+                 skybox.material = skyMaterial;
+                   //
+                
               const ground = BABYLON.Mesh.CreateGround('ground1', 2000, 2000, 2, scene);
                const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
                groundMaterial.diffuseTexture = new BABYLON.Texture("https://doc.babylonjs.com/img/resources/textures_thumbs/grass.dds.jpg", scene);
