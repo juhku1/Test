@@ -12,8 +12,6 @@
   <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
 
   <script>
-    var scene; // Siirrämme scene-muuttujan tähän, jotta se on globaali
-
     document.addEventListener('DOMContentLoaded', function () {
       var canvas = document.getElementById('renderCanvas');
       var engine = new BABYLON.Engine(canvas, true);
@@ -21,7 +19,7 @@
       var canJump = true;
 
       var createScene = function () {
-        scene = new BABYLON.Scene(engine); // Alustetaan scene tässä
+        var scene = new BABYLON.Scene(engine);
         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
         var ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 100, height: 100 }, scene);
@@ -86,23 +84,8 @@
 
       createScene();
 
-      scene.onBeforeRenderObservable.add(function () {
-        var playerSpeed = 0.1;
-        var playerDirection = new BABYLON.Vector3(0, 0, 0);
-
-        if (scene.inputStates.up) playerDirection.z = 1;
-        if (scene.inputStates.down) playerDirection.z = -1;
-        if (scene.inputStates.left) playerDirection.x = -1;
-        if (scene.inputStates.right) playerDirection.x = 1;
-
-        playerDirection.normalize();
-
-        var delta = playerDirection.scale(playerSpeed);
-        var forward = camera.getFrontPosition(1).subtract(camera.position).normalize();
-        delta = new BABYLON.Vector3(forward.x * delta.z, delta.y, forward.z * delta.z);
-        camera.position.addInPlace(delta);
-
-        if (camera.position.y < 1.01) canJump = true;
+      engine.runRenderLoop(function () {
+        scene.render();
       });
 
       window.addEventListener('resize', function () {
