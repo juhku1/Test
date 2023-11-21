@@ -16,24 +16,23 @@
       var canvas = document.getElementById('renderCanvas');
       var engine = new BABYLON.Engine(canvas, true);
       var camera;
-      var canJump = true; // Uusi muuttuja, joka määrittää, voiko hahmo hypätä
+      var canJump = true;
 
       var createScene = function () {
         var scene = new BABYLON.Scene(engine);
         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
-        // Luo maan pinta
         var ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 100, height: 100 }, scene);
         ground.material = new BABYLON.StandardMaterial('groundMaterial', scene);
         ground.material.diffuseColor = new BABYLON.Color3(0.8, 0.7, 0.5);
 
-        // Luo pelaajan kamera
         camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 1, -10), scene);
         camera.setTarget(new BABYLON.Vector3(0, 1, 0));
         camera.attachControl(canvas, true);
 
-        // Luo puut maan pinnalle
         createTrees(scene);
+
+        var player = createPlayer(scene);
 
         return scene;
       };
@@ -50,87 +49,56 @@
         }
       };
 
-      var scene = createScene();
+      var createPlayer = function (scene) {
+        var player = BABYLON.MeshBuilder.CreateBox('player', { height: 2, width: 1, depth: 1 }, scene);
+        player.position.y = 1;
+        player.physicsImpostor = new BABYLON.PhysicsImpostor(player, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, restitution: 0 }, scene);
+        return player;
+      };
 
-      // Käynnistä renderöinti
-      engine.runRenderLoop(function () {
-        scene.render();
-      });
-
-      // Päivitä näppäinasetukset
-      scene.inputStates = { up: false, down: false, left: false, right: false };
-
-      window.addEventListener('keydown', function (event) {
+      var handleInput = function (event) {
         switch (event.key) {
           case 'w':
-            scene.inputStates.up = true;
+            scene.inputStates.up = (event.type === 'keydown');
             break;
           case 's':
-            scene.inputStates.down = true;
+            scene.inputStates.down = (event.type === 'keydown');
             break;
           case 'a':
-            scene.inputStates.left = true;
+            scene.inputStates.left = (event.type === 'keydown');
             break;
           case 'd':
-            scene.inputStates.right = true;
+            scene.inputStates.right = (event.type === 'keydown');
             break;
           case ' ':
-            // Tarkista, voiko hahmo hypätä, ja hyppää tarvittaessa
-            if (canJump) {
-              camera.applyImpulse(new BABYLON.Vector3(0, 5, 0), camera.position);
+            if (canJump && event.type === 'keydown') {
+              camera.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 5, 0), camera.position);
               canJump = false;
             }
             break;
         }
-      });
+      };
 
-      window.addEventListener('keyup', function (event) {
-        switch (event.key) {
-          case 'w':
-            scene.inputStates.up = false;
-            break;
-          case 's':
-            scene.inputStates.down = false;
-            break;
-          case 'a':
-            scene.inputStates.left = false;
-            break;
-          case 'd':
-            scene.inputStates.right = false;
-            break;
-        }
-      });
+      window.addEventListener('keydown', handleInput);
+      window.addEventListener('keyup', handleInput);
 
-      // Liikkumisen päivitys
       scene.onBeforeRenderObservable.add(function () {
         var playerSpeed = 0.1;
         var playerDirection = new BABYLON.Vector3(0, 0, 0);
 
-        if (scene.inputStates.up) {
-          playerDirection.z = 1;
-        }
-        if (scene.inputStates.down) {
-          playerDirection.z = -1;
-        }
-        if (scene.inputStates.left) {
-          playerDirection.x = -1;
-        }
-        if (scene.inputStates.right) {
-          playerDirection.x = 1;
-        }
+        if (scene.inputStates.up) playerDirection.z = 1;
+        if (scene.inputStates.down) playerDirection.z = -1;
+        if (scene.inputStates.left) playerDirection.x = -1;
+        if (scene.inputStates.right) playerDirection.x = 1;
 
         playerDirection.normalize();
 
-        // Liikuta pelaajaa kameran suuntaan
         var delta = playerDirection.scale(playerSpeed);
         var forward = camera.getFrontPosition(1).subtract(camera.position).normalize();
         delta = new BABYLON.Vector3(forward.x * delta.z, delta.y, forward.z * delta.z);
         camera.position.addInPlace(delta);
 
-        // Tarkista, onko hahmo maan pinnalla, ja aseta canJump arvoksi true
-        if (camera.position.y < 1.01) {
-          canJump = true;
-        }
+        if (camera.position.y < 1.01) canJump = true;
       });
 
       window.addEventListener('resize', function () {
@@ -140,4 +108,3 @@
   </script>
 </body>
 </html>
-
