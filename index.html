@@ -10,7 +10,7 @@
 <body>
     <canvas id="gameCanvas"></canvas>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/cannon.js"></script> <!-- Include Cannon.js for Physics -->
+    <script src="https://cdn.babylonjs.com/cannon.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('gameCanvas');
@@ -18,44 +18,65 @@
 
             const createScene = () => {
                 const scene = new BABYLON.Scene(engine);
-                scene.enablePhysics(new BABYLON.Vector3(0, -1.81, 0), new BABYLON.CannonJSPlugin()); // Enable physics with gravity
+                scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
                 const camera = new BABYLON.UniversalCamera('camera1', new BABYLON.Vector3(0, 50, -50), scene);
                 camera.setTarget(BABYLON.Vector3.Zero());
-                camera.attachControl(canvas, false);
+                camera.attachControl(canvas, true);
                 camera.keysUp.push(87);    // W
                 camera.keysDown.push(83);  // S
                 camera.keysLeft.push(65);  // A
                 camera.keysRight.push(68); // D
-                camera.applyGravity = true; // Apply gravity to the camera
-                camera.ellipsoid = new BABYLON.Vector3(2, 2, 2); // Set the collision bounds
-                camera.checkCollisions = true; // Enable collision detection
+                camera.applyGravity = true;
+                camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
+                camera.checkCollisions = true;
 
+                // Pointer lock
                 canvas.addEventListener('click', () => {
-                    if (!scene.isPointerLock) {
-                        canvas.requestPointerLock = canvas.requestPointerLock || canvas.msRequestPointerLock;
+                    if (!document.pointerLockElement) {
                         canvas.requestPointerLock();
                     }
                 }, false);
 
+                // Jump variables
+                let isJumping = false;
+                const jumpHeight = 0.2;  // Adjust for desired jump strength
+                const gravity = -0.01;  // Adjust for desired gravity effect
+                let velocityY = 0;
+
+                window.addEventListener('keydown', (event) => {
+                    if (event.keyCode === 32 && !isJumping && camera.position.y <= 2.1) { // Spacebar for jump
+                        isJumping = true;
+                        velocityY = jumpHeight;
+                    }
+                });
+
+                scene.registerBeforeRender(() => {
+                    if (isJumping) {
+                        camera.position.y += velocityY;
+                        velocityY += gravity;
+                        if (camera.position.y < 2) { // Reset when close to ground
+                            camera.position.y = 2;
+                            isJumping = false;
+                        }
+                    }
+                });
+
                 new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
 
-
-              const ground = BABYLON.Mesh.CreateGround('ground1', 2000, 2000, 2, scene);
-               const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-               groundMaterial.diffuseTexture = new BABYLON.Texture("https://doc.babylonjs.com/img/resources/textures_thumbs/grass.dds.jpg", scene);
-              ground.material = groundMaterial;
-
-                ground.checkCollisions = true; // Enable ground collision
+                const ground = BABYLON.Mesh.CreateGround('ground1', 2000, 2000, 2, scene);
+                const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
+                groundMaterial.diffuseTexture = new BABYLON.Texture("https://doc.babylonjs.com/img/resources/textures_thumbs/grass.dds.jpg", scene);
+                ground.material = groundMaterial;
+                ground.checkCollisions = true;
 
                 // Create a box
                 const box = BABYLON.Mesh.CreateBox('box1', 20, scene);
                 const boxMaterial = new BABYLON.StandardMaterial("groundMat", scene);
                 boxMaterial.diffuseTexture = new BABYLON.Texture("https://doc.babylonjs.com/img/resources/textures_thumbs/grass.dds.jpg", scene);
-               box.material = boxMaterial;
-
+                box.material = boxMaterial;
                 box.position.y = 1; // Position the box above the ground
-                box.checkCollisions = true; // Enable box collision
+                box.checkCollisions = true;
 
                 return scene;
             };
@@ -72,4 +93,3 @@
     </script>
 </body>
 </html>
-
