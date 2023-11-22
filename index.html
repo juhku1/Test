@@ -41,9 +41,9 @@
 
                 // Jump variables
                 let isJumping = false;
-                const jumpHeight = 20;  // Adjust for desired jump strength
+                const jumpHeight = 2;  // Adjust for desired jump strength
                 const gravity = -0.01;  // Adjust for desired gravity effect
-                let velocityY = 0;
+                let velocityY = 5;
 
                 window.addEventListener('keydown', (event) => {
                     if (event.keyCode === 32 && !isJumping && camera.position.y <= 2.1) { // Spacebar for jump
